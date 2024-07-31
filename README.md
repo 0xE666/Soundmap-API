@@ -56,7 +56,7 @@
 <body>
     <div class="container">
         <h1>Soundmap API</h1>
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgA..." alt="Soundmap API Logo">
+        <img src="data:image/png;base64,YOUR_BASE64_IMAGE_STRING_HERE" alt="Soundmap API Logo">
         <p>This Python library allows you to interact with the Soundmap API to manage songs, trades, and quests.</p>
 
         <h2>Features</h2>
