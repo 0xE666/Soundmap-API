@@ -11,6 +11,7 @@
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            color: #333;
         }
         .container {
             width: 80%;
@@ -24,21 +25,38 @@
             color: #333;
         }
         code {
-            background: #f4f4f4;
+            background: #e8e8e8;
             padding: 2px 5px;
             border-radius: 5px;
+            color: #d14;
         }
         pre {
-            background: #f4f4f4;
+            background: #e8e8e8;
             padding: 10px;
             border-radius: 5px;
             overflow-x: auto;
+            color: #d14;
+        }
+        .highlight {
+            background-color: #fffae5;
+            padding: 5px;
+            border-left: 5px solid #ffecb3;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px 0;
+        }
+        a {
+            color: #d14;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Soundmap API</h1>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgA..." alt="Soundmap API Logo">
         <p>This Python library allows you to interact with the Soundmap API to manage songs, trades, and quests.</p>
 
         <h2>Features</h2>
