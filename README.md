@@ -5,6 +5,8 @@
 
 This Python library allows you to interact with the Soundmap API to manage songs, trades, and quests.
 
+I will be lightly monitoring this, any questions? Discord: eric.cpp
+
 ## Features
 
 - Search for songs
