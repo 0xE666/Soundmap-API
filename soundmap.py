@@ -10,7 +10,7 @@ class Soundmap:
     def __init__(self):
         self.authorization_token = ""
         self.owner_id = ""
-        self.API_BASE = "https://api2.soundmap.dev"
+        self.API_BASE = "https://api10.soundmap.dev"
         self.API_SONG = "/trpc/song"
         self.API_SONGS2 = "/trpc/songs2"
         self.API_NOTIFS = "/trpc/notifs?batch=1&input=%7B%7D"
@@ -38,7 +38,7 @@ class Soundmap:
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate",
             "Platform": "ios",
-            "User-Agent": "Mmap/191 CFNetwork/1496.0.7 Darwin/23.5.0",
+            "User-Agent": "Mmap/331 CFNetwork/1568.100.1.2.1 Darwin/24.0.0",
             "Timezone": "America/Chicago"
         }
 
