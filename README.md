@@ -58,7 +58,7 @@ song_data = api.search_song("song_id")
 print(song_data)
 ```
 
-**### Fetch specfic song data
+### Fetch specfic song data
 
 ```python
 song = api.search_song_details("world", "desiigner", "shiny rare")
