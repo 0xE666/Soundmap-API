@@ -62,6 +62,13 @@ print(song_data)
 ### Fetch specfic song data
 
 ```python
+# kwargs
+# compatible_rarities = [
+#            "common", "uncommon", "rare", "shiny", 
+#            "mystic", "exclusive",
+#            "rare shiny", "uncommon shiny", "common shiny"
+#        ]
+
 song = api.search_song_details("song_name", "artist", "rarity **shiny")
 print(song)
 ```
