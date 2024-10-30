@@ -9,7 +9,8 @@ I will be lightly monitoring this, any questions? Discord: eric.cpp
 
 ## Features
 
-- Search for songs
+- Search for songs by id (uuid4)
+- Search for songs by name, artist & rarity
 - Fetch songs from a profile
 - Create, delete, and manage trade offers
 - Fetch and parse trade data
