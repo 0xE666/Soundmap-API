@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-import requests, json, socket, time, uuid, datetime, logging
+import requests, json, socket, time, uuid, datetime, logging, urllib.parse
 
 logging.basicConfig(level=logging.DEBUG, filename='trade_log.log', filemode='a', 
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -29,6 +29,9 @@ class Soundmap:
         self.API_ARTIST_QUESTS = "/trpc/artistQuests?batch=1&input=%7B%7D"
         self.API_COMPLETE_ARTIST_QUEST = "/trpc/completeArtistQuest?batch=1"
         self.API_ARTIST_QUEST_TRADE = "/trpc/tradeOffers?batch=1&input=%s"
+        self.API_ADD_SONG_TO_FOLDER = "/trpc/addSongsToFolder?batch=1"
+        self.API_REMOVE_SONG_FROM_FOLDER = "/trpc/removeSongsFromFolder?batch=1"
+        self.API_SEARCH = "/trpc/tradeOffers?batch=1"
 
         self.headers = {
             "Content-Type": "application/json",
@@ -71,7 +74,6 @@ class Soundmap:
         return f"{self.API_BASE}{self.API_SONG}?{query_string}"
     
     def change_bio(self, bio):
-       
         bio_payload = {
             "0": {
                 "bio": f"{bio}"
@@ -134,13 +136,16 @@ class Soundmap:
         if owner_id is None:
             owner_id = self.owner_id
 
-        fetch_url = f"{self.API_BASE}{self.API_SONGS2}??batch=1&input=%7B%220%22%3A%7B%22ownerId%22%3A%22{owner_id}%22%7D%7D"
+        encode_this = urllib.parse.quote(f'{{"0":{{"ownerId":"{owner_id}"}}}}')
+        fetch_url = f"{self.API_BASE}{self.API_SONGS2}??batch=1&input={encode_this}"
+        #fetch_url = f"{self.API_BASE}{self.API_SONGS2}??batch=1&input=%7B%220%22%3A%7B%22ownerId%22%3A%22{owner_id}%22%7D%7D"
+        print(fetch_url)
         retries = 3
         backoff_factor = 2
 
         for attempt in range(retries):
             try:
-                socket.gethostbyname('api2.soundmap.dev')
+                socket.gethostbyname('api10.soundmap.dev')
 
                 response = self.http.get(fetch_url, headers=self.headers)
                 response.raise_for_status()
@@ -154,6 +159,7 @@ class Soundmap:
                     "common": [],
                     "uncommon": [],
                     "rare": [],
+                    "epic": [],  # Added epic rarity
                     "shiny": [],
                     "other": [],
                 }
@@ -165,15 +171,20 @@ class Soundmap:
                         "artist": song['artist'],
                         "genre": song['genre'],
                         "imageUrl": song['imageUrl'],
-                        "previewUrl": song.get('previewUrl', False)
+                        "previewUrl": song.get('previewUrl', False),
+                        "rarity": song['rarity'],  # Added to ensure rarity is passed
+                        "type": song.get('type', 'normal')  # Added to ensure type is passed
                     }
 
                     if song.get('type') == 'shiny':
                         songs_by_rarity['shiny'].append(song_data)
                     elif song['rarity'] in songs_by_rarity:
-                        songs_by_rarity[song['rarity']].append(song_data)
+                        if song.get('type') == 'mystic':
+                            songs_by_rarity['epic'].append(song_data)
+                        else:
+                            songs_by_rarity[song['rarity']].append(song_data)
                     else:
-                        songs_by_rarity["other"].append(songs_data)
+                        songs_by_rarity["other"].append(song_data)
 
                 with open("data/songs_by_rarity.json", 'w') as f:
                     json.dump(songs_by_rarity, f, indent=4)
@@ -185,11 +196,12 @@ class Soundmap:
             except requests.exceptions.RequestException as e:
                 print(f"Error fetching songs: {e}")
 
-
             time.sleep(backoff_factor ** attempt)
-        
+
         print("Failed to fetch songs after several attempts.")
         return None
+
+
     
     def create_trade_offer(self, song_ids, coins=0, note=""):
         if not isinstance(song_ids, list):
@@ -562,3 +574,148 @@ class Soundmap:
             return None
         
 
+    def add_song_to_folder(self, song_id, folder_id):
+        payload = {
+            "0": {
+                "folderId": folder_id,
+                "songIds": [song_id]
+            }
+        }
+
+        url = f"{self.API_BASE}{self.API_ADD_SONG_TO_FOLDER}"
+
+        try:
+            response = self.http.post(url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            if response.status_code == 200:
+                return True
+            return False
+        except requests.exceptions.RequestException as e:
+            print(f"Error adding song to folder: {e}")
+            return None
+       
+
+    def remove_song_from_folder(self, song_id, folder_id):
+        payload = {
+            "0": {
+                "folderId": folder_id,
+                "songIds": [song_id]
+            }
+        }
+
+        url = f"{self.API_BASE}{self.API_REMOVE_SONG_FROM_FOLDER}"
+
+        try:
+            response = self.http.post(url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            if response.status_code == 200:
+                return True
+            return False
+        except requests.exceptions.RequestException as e:
+            print(f"Error adding song to folder: {e}")
+            return None
+        
+    def fetch_folders(self, owner_id=None):
+        if owner_id is None:
+            owner_id = self.owner_id
+
+        fetch_url = f"{self.API_BASE}{self.API_SONGS2}??batch=1&input=%7B%220%22%3A%7B%22ownerId%22%3A%22{owner_id}%22%7D%7D"
+        retries = 3
+        backoff_factor = 2
+
+        for attempt in range(retries):
+            try:
+                socket.gethostbyname('api10.soundmap.dev')
+
+                response = self.http.get(fetch_url, headers=self.headers)
+                response.raise_for_status()
+                songs_data = response.json()
+
+                return songs_data
+
+            except socket.gaierror as e:
+                print(f"DNS resolution error: {e}")
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching songs: {e}")
+
+
+            time.sleep(backoff_factor ** attempt)
+        
+        print("Failed to fetch songs after several attempts.")
+        return None
+
+    def extract_folder_ids_and_names(self, song_data):
+        try:
+            folders_data = song_data['result']['data']['folders']
+            folders_dict = {folder['name']: folder['id'] for folder in folders_data}
+            return folders_dict
+        except KeyError as e:
+            print(f"KeyError: {e}")
+            return {}
+        
+    #what a fucking shitshow ?>!?
+    def search_song_details(self, song_name, artist_name, rarity_type):
+        rarity_parts = sorted(rarity_type.replace(",", " ").split())
+        normalized_rarity_type = " ".join(rarity_parts).lower()
+
+        compatible_rarities = [
+            "common", "uncommon", "rare", "shiny", 
+            "mystic", "exclusive",
+            "rare shiny", "uncommon shiny", "common shiny"
+        ]
+
+        if normalized_rarity_type not in compatible_rarities:
+            return "Please check a different rarity."
+
+        query = {
+            "0": {
+                "query": f"{song_name} {artist_name}",
+                "includeMine": False,
+                "rarities": normalized_rarity_type.split()
+            }
+        }
+        encoded_query = urllib.parse.quote(json.dumps(query))
+        url = f"{self.API_BASE}{self.API_SEARCH}&input={encoded_query}"
+
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+
+            matching_songs = []
+            for trade in data[0]["result"]["data"].get("tradeOffers", []):
+                for song in trade.get("songs", []):
+                    if "shiny" in normalized_rarity_type:
+                        type_match = song.get("type", "").lower() == "shiny"
+                        rarity_match = all(r in song.get("rarity", "").lower() for r in rarity_parts if r != "shiny")
+                    else:
+                        type_match = True
+                        rarity_match = all(r in song.get("rarity", "").lower() for r in rarity_parts)
+
+                    is_match = (
+                        song_name.lower() == song.get("name", "").lower()
+                        and artist_name.lower() == song.get("artist", "").lower()
+                        and rarity_match
+                        and type_match
+                    )
+
+                    if is_match:
+                        song_data = {
+                            "song_name": song["name"],
+                            "artist": song["artist"],
+                            "image_url": song["imageUrl"],
+                            "rarity": song["rarity"],
+                            "type": song.get("type", ""),
+                            "owner_id": song["ownerId"],
+                            "owner_username": trade["user"]["username"],
+                            "owner_trades_completed": trade["user"]["tradesCompleted"]
+                        }
+                        if normalized_rarity_type == "mystic":
+                            song_data["sequence_label"] = song.get("sequenceLabel", "")
+                        matching_songs.append(song_data)
+
+            return matching_songs if matching_songs else "Please check a different rarity."
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error in search: {e}")
+            return None
