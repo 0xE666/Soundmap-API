@@ -62,7 +62,6 @@ print(song_data)
 ### Fetch specfic song data
 
 ```python
-# kwargs
 # compatible_rarities = [
 #            "common", "uncommon", "rare", "shiny", 
 #            "mystic", "exclusive",
