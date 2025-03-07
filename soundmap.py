@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-import requests, json, socket, time, uuid, datetime, logging, urllib.parse
+import cloudscraper, json, socket, time, uuid, datetime, logging, urllib.parse
 
 logging.basicConfig(level=logging.DEBUG, filename='trade_log.log', filemode='a', 
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -52,7 +52,7 @@ class Soundmap:
             backoff_factor=1
         )
 
-        self.http = requests.Session()
+        self.http = cloudscraper.create_scraper()
         adapter = HTTPAdapter(max_retries=self.retry_strategy)
         self.http.mount("https://", adapter)
         self.http.mount("http://", adapter)
@@ -468,36 +468,32 @@ class Soundmap:
         if genre not in valid_genres:
             raise ValueError(f"Invalid genre: {genre}. Valid genres are: {', '.join(valid_genres)}")
 
-
         lootbox_type = {
-            "0":{
+            "0": {
                 "lootboxId": "dailyFree",
-                "genre": f"{genre}"
-                }
+                "genre": genre
             }
+        }
 
         claim_url = f"{self.API_BASE}{self.API_CLAIM_LOOTBOX}"
 
         try:
-            response = requests.post(f"{claim_url}", headers=self.headers, json=lootbox_type)
+            response = self.http.post(claim_url, headers=self.headers, json=lootbox_type)
             print(response.text)
             response.raise_for_status()
             if response.status_code == 200:
                 return True
             return False
-        
-            #return response.json()
         except requests.exceptions.RequestException as e:
             print(f"Error claiming lootbox offer: {e}")
             return None
 
     def claim_coins(self):
-       
         coin_data = {}
         coin_url = f"{self.API_BASE}{self.API_CLAIM_COINS}"
 
         try:
-            response = self.http.post(f"{coin_url}", headers=self.headers, json=coin_data)
+            response = self.http.post(coin_url, headers=self.headers, json=coin_data)
             response.raise_for_status()
             if response.status_code == 200:
                 return True
@@ -521,7 +517,7 @@ class Soundmap:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching open trade IDs: {e}")
             return None
-        
+
     def fetch_quests(self, artist=None):
         fetch_url = f"{self.API_BASE}{self.API_ARTIST_QUESTS}"
         try:
@@ -551,7 +547,7 @@ class Soundmap:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching quests: {e}")
             return None
-        
+
     def build_quest_trade_url(self, quest_requirements):
         input_data = {
             "0": {
@@ -572,7 +568,6 @@ class Soundmap:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching trade data: {e}")
             return None
-        
 
     def add_song_to_folder(self, song_id, folder_id):
         payload = {
@@ -593,7 +588,6 @@ class Soundmap:
         except requests.exceptions.RequestException as e:
             print(f"Error adding song to folder: {e}")
             return None
-       
 
     def remove_song_from_folder(self, song_id, folder_id):
         payload = {
@@ -614,7 +608,7 @@ class Soundmap:
         except requests.exceptions.RequestException as e:
             print(f"Error adding song to folder: {e}")
             return None
-        
+
     def fetch_folders(self, owner_id=None):
         if owner_id is None:
             owner_id = self.owner_id
@@ -638,9 +632,8 @@ class Soundmap:
             except requests.exceptions.RequestException as e:
                 print(f"Error fetching songs: {e}")
 
-
             time.sleep(backoff_factor ** attempt)
-        
+
         print("Failed to fetch songs after several attempts.")
         return None
 
@@ -652,8 +645,7 @@ class Soundmap:
         except KeyError as e:
             print(f"KeyError: {e}")
             return {}
-        
-    #what a fucking shitshow ?>!?
+
     def search_song_details(self, song_name, artist_name, rarity_type):
         rarity_parts = sorted(rarity_type.replace(",", " ").split())
         normalized_rarity_type = " ".join(rarity_parts).lower()
@@ -678,7 +670,7 @@ class Soundmap:
         url = f"{self.API_BASE}{self.API_SEARCH}&input={encoded_query}"
 
         try:
-            response = requests.get(url, headers=self.headers)
+            response = self.http.get(url, headers=self.headers)
             response.raise_for_status()
             data = response.json()
 
