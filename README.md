@@ -39,7 +39,7 @@ cd soundmap-api
 Install the required dependencies:
 
 ```sh
-pip install requests urllib3
+pip install cloudscraper urllib3
 ```
 
 ## Usage
