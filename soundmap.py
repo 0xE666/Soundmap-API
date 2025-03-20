@@ -36,7 +36,7 @@ class Soundmap:
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "*/*",
-            "Version": "1.29.0.1721325593856",
+            "Version": "1.57.0",
             "Authorization": self.authorization_token,
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate",
