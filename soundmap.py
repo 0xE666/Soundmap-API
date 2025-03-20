@@ -41,7 +41,7 @@ class Soundmap:
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate",
             "Platform": "ios",
-            "User-Agent": "Mmap/331 CFNetwork/1568.100.1.2.1 Darwin/24.0.0",
+            "User-Agent": "Mmap/650 CFNetwork/3826.400.120 Darwin/24.3.0",
             "Timezone": "America/Chicago"
         }
 
