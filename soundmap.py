@@ -1,7 +1,7 @@
 from urllib.parse import urlencode
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-import cloudscraper, json, socket, time, uuid, datetime, logging, urllib.parse
+import cloudscraper, json, socket, time, uuid, datetime, logging, urllib.parse, requests
 
 logging.basicConfig(level=logging.DEBUG, filename='trade_log.log', filemode='a', 
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,6 +32,7 @@ class Soundmap:
         self.API_ADD_SONG_TO_FOLDER = "/trpc/addSongsToFolder?batch=1"
         self.API_REMOVE_SONG_FROM_FOLDER = "/trpc/removeSongsFromFolder?batch=1"
         self.API_SEARCH = "/trpc/tradeOffers?batch=1"
+        self.REROLL_ARTIST_QUEST = "/trpc/rerollArtistQuest?batch=1"
 
         self.headers = {
             "Content-Type": "application/json",
@@ -710,4 +711,23 @@ class Soundmap:
 
         except requests.exceptions.RequestException as e:
             print(f"Error in search: {e}")
+            return None
+        
+    def reroll_artist_quest(self, artist_id, rewarded_ad=False):
+        reroll_url = f"{self.API_BASE}{self.reroll_artist_quest}"
+        payload = {
+            "0": {
+                "artistId": artist_id,
+                "rewardedAd": rewarded_ad
+            }
+        }
+
+        try:
+            response = self.http.post(reroll_url, headers=self.headers, json=payload)
+            response.raise_for_status()
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"Error rerolling artist quest: {e}")
             return None
