@@ -167,6 +167,12 @@ trade_data = api.get_quest_trade_data(trade_requirements)
 print(trade_data)
 ```
 
+### Reroll arist quest
+```python
+result = api.reroll_artist_quest("1tG7s7S4sq2eFFW0QZyLbm", rewarded_ad=False)
+print(result)
+```
+
 ## Configuring an iOS Device for Burp Suite
 
 To configure your iOS device to work with Burp Suite, follow these steps:
